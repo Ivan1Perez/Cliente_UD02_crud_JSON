@@ -69,7 +69,7 @@ let crudOptionsMsg =
 let genericErrorMsg =
   "Error. The character introduced is not valid. Please. Try again.\n";
 let crudOptionsCompleteMsg = new Array(selectOptionsMsg, crudOptionsMsg);
-let searchProdAnswer;
+let id;
 let searchProdMsg = `Introduce de Id number of the product you want to search.`;
 let noNumberError = `Error. The character introduced is not a number. Please, try again.\n`;
 let product;
@@ -83,13 +83,15 @@ let addProdPriceMsg = `Enter the price (euros):`;
 let addProdRatingMsg = `Enter the rating (from 0 to 5):\n`;
 let addProdRatingErrorMsg = `Error. The rating must be no less than 0 and no more than 5.\n`;
 let modifyProdHeaderMsg = `Modifying product:\n\n`;
-let modifyProdIdMsg = `Enter the id number of the product want to modify:`;
-let selectFieldsMsg = `Which fiel do you want to modify?\n\n`;
+let modifyProdIdMsg = `Enter the id number of the product you want to modify:`;
+let selectFieldsMsg = `Which field do you want to modify?\n\n`;
 let prodFieldsMsg = `   - Name --> Enter '1'.\n   - Description --> Enter '2'.\n   - Category --> Enter '3'.\n   - Price --> Enter '4'.\n   - Rating --> Enter '5'.\n`;
 let modifiedNameMsg = `Enter the modified name:\n`;
 let modifiedDescMsg = `Enter the modified description:\n`;
 let modifiedPriceMsg = `Enter the modified price:\n`;
 let modifiedRatingMsg = `Enter the modified rating:\n`;
+let modifyAnotherItemMsg = `Do you want to modify another item?\n`;
+let yesNoMsg = `   - Yes --> Enter '1'\n   - No --> Enter '2'\n`;
 
 //Functions:
 
@@ -109,11 +111,15 @@ function main() {
 
   switch (crudOptionSelected) {
     case "1":
-      searchProdAnswer = prompt(searchProdMsg);
-      while (isNaN(searchProdAnswer.trim()) || searchProdAnswer.trim() === "") {
-        searchProdAnswer = prompt(`${noNumberError}${searchProdMsg}`);
+      id = prompt(searchProdMsg);
+      while (isNaN(id.trim()) || id.trim() === "") {
+        id = prompt(`${noNumberError}${searchProdMsg}`);
       }
       product = products.find(searchProdById);
+      console.log(`Product: ${product}`);
+      if(product == undefined){
+/*--------------------------------------------------ESTAMOS AQUÍ--------------------------------------------------------------------------------------*/
+      }
       break;
 
     case "2":
@@ -127,6 +133,7 @@ function main() {
       break;
 
     case "4":
+      deleteProduct();
       break;
 
     default:
@@ -135,15 +142,15 @@ function main() {
 }
 
 function searchProdById(product) {
-  return product.id === parseInt(searchProdAnswer);
+  return product.id === parseInt(id);
 }
 
 function addProduct() {
   let name, description, category, price, rating;
 
-  name = checkedNameDesc(addProdNameMsg);
-  description = checkedNameDesc(addProdDescMsg);
-  category = checkedCategory();
+  name = checkedNameDesc(addProdHeaderMsg, addProdNameMsg);
+  description = checkedNameDesc(addProdHeaderMsg, addProdDescMsg);
+  category = checkedCategory(addProdHeaderMsg);
   price = checkedPrice();
   rating = checkedRating();
 
@@ -158,28 +165,35 @@ function addProduct() {
   products.push[product];
 }
 
-function checkedNameDesc(addMessage) {
+function checkedNameDesc(headerMsg, enterParamMsg) {
   let answer;
 
-  answer = prompt(`${addProdHeaderMsg}${addMessage}`);
+  answer = prompt(`${headerMsg}${enterParamMsg}`);
   while (answer.trim() === "") {
-    answer = prompt(`${emptyFieldErrorMsg}${addProdHeaderMsg}${addMessage}`);
+    answer = prompt(`${emptyFieldErrorMsg}${headerMsg}${enterParamMsg}`);
   }
   return answer;
 }
 
-function checkedCategory() {
+function checkedCategory(headerMsg) {
   let answer;
   let category;
 
-  answer = prompt(`${addProdHeaderMsg}${selectCategoryMsg}${categoriesMsg}`);
+  answer = prompt(`${headerMsg}${selectCategoryMsg}${categoriesMsg}`);
   while (answer !== "1" && answer !== "2" && answer !== "3") {
     answer = prompt(
-      `${genericErrorMsg}${addProdHeaderMsg}${selectCategoryMsg}${categoriesMsg}`
+      `${genericErrorMsg}${headerMsg}${selectCategoryMsg}${categoriesMsg}`
     );
   }
 
-  switch (answer) {
+  category = categorySelector(answer);
+  return category;
+}
+
+function categorySelector(param) {
+  let category;
+
+  switch (param) {
     case "1":
       category = "Processors";
       break;
@@ -198,20 +212,20 @@ function checkedCategory() {
   return category;
 }
 
-function checkedPrice() {
+function checkedPrice(headerMsg) {
   let answer;
 
-  answer = prompt(`${addProdHeaderMsg}${addProdPriceMsg}`);
+  answer = prompt(`${headerMsg}${addProdPriceMsg}`);
   while (answer.trim() === "" || isNaN(answer.trim())) {
-    answer = prompt(`${noNumberError}${addProdHeaderMsg}${addProdPriceMsg}`);
+    answer = prompt(`${noNumberError}${headerMsg}${addProdPriceMsg}`);
   }
   return parseFloat(answer);
 }
 
-function checkedRating() {
+function checkedRating(headerMsg) {
   let answer;
 
-  answer = prompt(`${addProdHeaderMsg}${addProdRatingMsg}`);
+  answer = prompt(`${headerMsg}${addProdRatingMsg}`);
   while (
     answer.trim() === "" ||
     isNaN(answer.trim()) ||
@@ -219,10 +233,10 @@ function checkedRating() {
     parseFloat(answer) > 5
   ) {
     if (answer.trim() === "" || isNaN(answer.trim())) {
-      answer = prompt(`${noNumberError}${addProdHeaderMsg}${addProdRatingMsg}`);
+      answer = prompt(`${noNumberError}${headerMsg}${addProdRatingMsg}`);
     } else if (parseFloat(answer) < 0 || parseFloat(answer) > 5) {
       answer = prompt(
-        `${addProdRatingErrorMsg}${addProdHeaderMsg}${addProdRatingMsg}`
+        `${addProdRatingErrorMsg}${headerMsg}${addProdRatingMsg}`
       );
     }
   }
@@ -231,49 +245,90 @@ function checkedRating() {
 
 function modifyProduct() {
   let answer;
-  let id;
-  let isValid = false;
-  let selectedField;
 
   answer = prompt(`${modifyProdHeaderMsg}${modifyProdIdMsg}`);
   while (answer.trim() === "" || isNaN(answer.trim())) {
     answer = prompt(`${noNumberError}${modifyProdHeaderMsg}${modifyProdIdMsg}`);
   }
   id = parseInt(answer);
+  product = products.find(searchProdById);
 
-  answer = prompt(`${modifyProdHeaderMsg}${selectFieldsMsg}${prodFieldsMsg}`);
   do {
-    switch (answer) {
-      case "1":
-        selectedField = prompt(`${modifiedNameMsg}`);
-        break;
+    answer = prompt(`${modifyProdHeaderMsg}${selectFieldsMsg}${prodFieldsMsg}`);
+    modificationSwitch(answer);
 
-      case "2":
-        selectedField = prompt(`${modifiedDescMsg}`);
-        break;
-
-      case "3":
-        selectedField = prompt(`${selectCategoryMsg}${categoriesMsg}`);
-        break;
-
-      case "4":
-        selectedField = prompt(`${modifiedPriceMsg}`);
-        break;
-
-      case "5":
-        selectedField = prompt(`${modifiedRatingMsg}`);
-        break;
-
-      case "1": case "2": case "3": case "4": case "5":
-        isValid = true;
-        break;
-
-      default:
-        answer = prompt(`${genericErrorMsg}${modifyProdHeaderMsg}${selectFieldsMsg}${prodFieldsMsg}`);
-        break;
+    answer = prompt(`${modifyAnotherItemMsg}${yesNoMsg}`);
+    while (answer !== "1" && answer !== "2") {
+      answer = prompt(`${genericErrorMsg}${modifyAnotherItemMsg}${yesNoMsg}`);
     }
-  } while (!isValid);
+  } while (answer === "1");
+
+  console.log(product);
 }
 
-//commit
+function modificationSwitch(field) {
+  let isValid = false;
+
+  while (!isValid) {
+    switch (field) {
+      case "1": //Name
+        product.name = checkedNameDesc(modifyProdHeaderMsg, modifiedNameMsg);
+        isValid = true;
+        break;
+  
+      case "2": //Description
+        product.description = checkedNameDesc(
+          modifyProdHeaderMsg,
+          modifiedDescMsg
+        );
+        isValid = true;
+        break;
+  
+      case "3": //Category
+        product.category = checkedCategory(modifyProdHeaderMsg);
+        isValid = true;
+        break;
+  
+      case "4": //Price
+        product.price = checkedPrice(modifiedPriceMsg);
+        isValid = true;
+        break;
+  
+      case "5": //Rating
+        product.rating = checkedRating(modifiedRatingMsg);
+        isValid = true;
+        break;
+  
+      default:
+        field = prompt(
+          `${genericErrorMsg}${modifyProdHeaderMsg}${selectFieldsMsg}${prodFieldsMsg}`
+        );
+        break;
+    }
+  }
+}
+
+function checkedNumber(headerMsg, enterMsg) {
+  let answer;
+
+  answer = prompt(`${headerMsg}${enterMsg}`);
+  while (answer.trim() === "" || isNaN(answer.trim())) {
+    answer = prompt(`${noNumberError}${headerMsg}${enterMsg}`);
+  }
+}
+
+function deleteProduct() {
+  
+}
+
+/*function optionsNumFunct(totalOptions) {
+  let options = new Array();
+
+  for(let i = 0; i < totalOptions; i++){
+    options[i] = i + 1;
+  }
+
+  return options;
+}*/
+
 main();
