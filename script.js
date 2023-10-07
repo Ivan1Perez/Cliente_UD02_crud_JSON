@@ -2,7 +2,7 @@
 Create a program to search for products with the following characteristics:
 • It should accept the following product features (Id, Name, Description, Category, 
 Price (euros), Rating (1-5)).COMPLETED
-• We should be able to search, add, modify, and delete products.
+• We should be able to search, add, modify, and delete products. COMPLETED
 • We should be able to search for products by price (higher to lower or lower to 
 higher).
 • We should be able to search for products in alphabetical order (a-z and z-a).
@@ -81,7 +81,11 @@ let emptyFieldErrorMsg = `Error. This field can not be empty. Please, try again:
 let addProdNameMsg = `   - Enter the name of the product`;
 let addProdDescMsg = `   - Enter the description of the product:`;
 let selectCategoryMsg = `   - Select one of the following categories:\n`;
-let categoriesMsg = `   - Processors --> Enter "1".\n   - Motherboards --> Enter "2".\n   - Graphics cards --> Enter "3".\n`;
+let categories = [];
+categories[0] = "Processors";
+categories[1] = "Motherboards";
+categories[2] = "Graphics cards";
+let categoriesMsg;
 let addProdPriceMsg = `Enter the price (euros):`;
 let addProdRatingMsg = `Enter the rating (from 0 to 5):\n`;
 let addProdRatingErrorMsg = `Error. The rating must be no less than 0 and no more than 5.\n`;
@@ -108,6 +112,7 @@ function main() {
   let isValid;
 
   do {
+    fillCategoriesMsg();
     isValid = false;
     crudOptionSelected = prompt(`${selectOptionsMsg}${crudOptionsMsg}`);
     while (!isValid) {
@@ -196,6 +201,11 @@ function addProduct() {
 
   name = checkedNameDesc(addProdHeaderMsg, addProdNameMsg);
   description = checkedNameDesc(addProdHeaderMsg, addProdDescMsg);
+  /*---------------------------ESTAMOS AQUÍ-------------------------------------------------------------------*/
+  /*
+  Añadir un paso previo en el que se muestren todas las categorias que hay por el momento y se pregunte si
+  se quiere añadir una nueva categoria o seleccionar una de las ya disponibles.
+  */
   category = checkedCategory(addProdHeaderMsg);
   price = checkedPrice(addProdHeaderMsg);
   rating = checkedRating(addProdHeaderMsg);
@@ -225,39 +235,22 @@ function checkedNameDesc(headerMsg, enterParamMsg) {
 
 function checkedCategory(headerMsg) {
   let answer;
-  let category;
 
   answer = prompt(`${headerMsg}${selectCategoryMsg}${categoriesMsg}`);
-  while (answer !== "1" && answer !== "2" && answer !== "3") {
+  while (parseInt(answer) > categories || parseInt(answer) < 1) {
     answer = prompt(
       `${genericErrorMsg}${headerMsg}${selectCategoryMsg}${categoriesMsg}`
     );
   }
 
-  category = categorySelector(answer);
-  return category;
+  return categories[parseInt(answer)-1];
 }
 
-function categorySelector(param) {
-  let category;
-
-  switch (param) {
-    case "1":
-      category = "Processors";
-      break;
-
-    case "2":
-      category = "Motherboards";
-      break;
-
-    case "3":
-      category = "Graphics cards";
-      break;
-
-    default:
-      break;
+function fillCategoriesMsg() {
+  categoriesMsg = ``;
+  for (let i = 0; i < categories.length; i++) {
+    categoriesMsg += `   - ${categories[i]} --> Enter '${i+1}'.\n`;
   }
-  return category;
 }
 
 function checkedPrice(headerMsg) {
