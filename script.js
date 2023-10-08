@@ -66,7 +66,7 @@ let crudOptionSelected;
 let selectOptionsMsg = "Select one of the following options:\n";
 let xToCancelMsg = "Enter 'x' to cancel.";
 let crudOptionsMsg =
-  '   - Search --> Enter "1".\n   - Add --> Enter "2".\n   - Modify --> Enter "3".\n   - Delete --> Enter "4".\n   - Show all products --> Enter "5"\n   - Exit --> Enter "6".\n';
+  '   - Search --> Enter "1".\n   - Add --> Enter "2".\n   - Modify --> Enter "3".\n   - Delete --> Enter "4".\n   - Show all products --> Enter "5"\n   - Search products by price --> Enter "6".\n   - Search products in alphabetical order --> Enter "7".\n   - Search products by rating --> Enter "8".\n   - Filter products by category --> Enter "9".\n   - Clear console --> Enter "10"\n   - Exit --> Enter "11".\n';
 let genericErrorMsg =
   "Error. The character introduced is not valid. Please. Try again.\n";
 let crudOptionsCompleteMsg = new Array(selectOptionsMsg, crudOptionsMsg);
@@ -86,6 +86,10 @@ categories[0] = "Processors";
 categories[1] = "Motherboards";
 categories[2] = "Graphics cards";
 let categoriesMsg;
+let preCateogiresMsg = `   - Select one of the categories avaible --> Enter '1'\n   - Add a new category --> Enter '2'\n`;
+let enterCategMsg = `Enter a new category:`;
+let noNumsAllowedErrorMsg = `Error. Numbers are not allowed in this field. Please, try again.\n`;
+let existsCategErrorMsg = `Error. The category entered already exists. Please, try again.\n`;
 let addProdPriceMsg = `Enter the price (euros):`;
 let addProdRatingMsg = `Enter the rating (from 0 to 5):\n`;
 let addProdRatingErrorMsg = `Error. The rating must be no less than 0 and no more than 5.\n`;
@@ -104,6 +108,8 @@ let deletingProdMsg = `Deleting product:\n\n`;
 let deleteProdIdMsg = `Enter the id number of the product you want to delete:\n`;
 let sureToDeleteMsg = `Are you sure you want to delete this product?\n\n`;
 let returnDeleteProdMsg = `Go back to main menu --> Enter '1'\nGo back to the deleting section --> Enter '2'\n`;
+let prodsByPriceOptsMsg = `   - Highest to lowest --> Enter '1'\n   - Lowest to highest --> Enter '2'\n`;
+let prodsByAplhOptsMsg = `   - From A to Z --> Enter '1'\n   - From Z to A --> Enter '2'\n`;
 
 //Functions:
 
@@ -123,6 +129,11 @@ function main() {
         case "4":
         case "5":
         case "6":
+        case "7":
+        case "8":
+        case "9":
+        case "10":
+        case "11":
           isValid = true;
           break;
 
@@ -161,10 +172,31 @@ function main() {
         break;
 
       case "5":
-        showProducts();
+        console.log("Products:\n");
+        showProducts(products);
         break;
 
       case "6":
+        searchProdsByPrice();
+        break;
+
+      case "7":
+        searchProdsAlphOrder();
+        break;
+
+      case "8":
+        searchProdsByRating();
+        break;
+
+      case "9":
+        filterByCategory();
+        break;
+
+      case "10":
+        console.clear();
+        break;
+
+      case "11":
         exit = true;
         window.alert(`Bye!`);
         break;
@@ -201,12 +233,7 @@ function addProduct() {
 
   name = checkedNameDesc(addProdHeaderMsg, addProdNameMsg);
   description = checkedNameDesc(addProdHeaderMsg, addProdDescMsg);
-  /*---------------------------ESTAMOS AQUÍ-------------------------------------------------------------------*/
-  /*
-  Añadir un paso previo en el que se muestren todas las categorias que hay por el momento y se pregunte si
-  se quiere añadir una nueva categoria o seleccionar una de las ya disponibles.
-  */
-  category = checkedCategory(addProdHeaderMsg);
+  category = selectOrIntrodCategory(addProdHeaderMsg);
   price = checkedPrice(addProdHeaderMsg);
   rating = checkedRating(addProdHeaderMsg);
 
@@ -219,7 +246,7 @@ function addProduct() {
     rating
   );
   products.push(product);
-  console.log('Added product:\n');
+  console.log("Added product:\n");
   console.log(product.toString());
 }
 
@@ -233,6 +260,48 @@ function checkedNameDesc(headerMsg, enterParamMsg) {
   return answer;
 }
 
+function selectOrIntrodCategory(headerMsg) {
+  let category;
+  let answer = prompt(`${headerMsg}${selectOptionsMsg}${preCateogiresMsg}`);
+  let categoryIntroduced;
+
+  while (answer !== "1" && answer !== "2") {
+    answer = prompt(
+      `${headerMsg}${genericErrorMsg}${selectOptionsMsg}${preCateogiresMsg}`
+    );
+  }
+
+  if (answer === "1") {
+    category = checkedCategory(headerMsg);
+  } else {
+    categoryIntroduced = prompt(`${headerMsg}${enterCategMsg}`);
+    while (
+      categoryIntroduced.trim() === "" ||
+      containsNumbers(categoryIntroduced) ||
+      categories.includes(categoryIntroduced.toLowerCase())
+    ) {
+      if (categoryIntroduced.trim() === "") {
+        categoryIntroduced = prompt(
+          `${emptyFieldErrorMsg}${headerMsg}${enterCategMsg}`
+        );
+      } else if (containsNumbers(categoryIntroduced)) {
+        categoryIntroduced = prompt(
+          `${noNumsAllowedErrorMsg}${headerMsg}${enterCategMsg}`
+        );
+      } else {
+        categoryIntroduced = prompt(
+          `${existsCategErrorMsg}${headerMsg}${enterCategMsg}`
+        );
+      }
+    }
+    category = categoryIntroduced;
+    categories.push(categoryIntroduced);
+    fillCategoriesMsg();
+  }
+
+  return category;
+}
+
 function checkedCategory(headerMsg) {
   let answer;
 
@@ -243,13 +312,13 @@ function checkedCategory(headerMsg) {
     );
   }
 
-  return categories[parseInt(answer)-1];
+  return categories[parseInt(answer) - 1];
 }
 
 function fillCategoriesMsg() {
   categoriesMsg = ``;
   for (let i = 0; i < categories.length; i++) {
-    categoriesMsg += `   - ${categories[i]} --> Enter '${i+1}'.\n`;
+    categoriesMsg += `   - ${categories[i]} --> Enter '${i + 1}'.\n`;
   }
 }
 
@@ -341,7 +410,7 @@ function modificationSwitch(field) {
         break;
 
       case "3": //Category
-        product.category = checkedCategory(modifyProdHeaderMsg);
+        product.category = selectOrIntrodCategory(modifyProdHeaderMsg);
         isValid = true;
         break;
 
@@ -395,7 +464,8 @@ function deleteProduct() {
         index = products.indexOf(product);
         products.splice(index, 1);
         window.alert(`The product has been deleted successfully`);
-        showProducts();
+        console.log("Products:\n");
+        showProducts(products);
       }
       deleteAnotherProd = prompt(`${selectOptionsMsg}\n${returnDeleteProdMsg}`);
       while (deleteAnotherProd !== "1" && deleteAnotherProd !== "2") {
@@ -409,21 +479,55 @@ function deleteProduct() {
   } while (deleteAnotherProd === "2");
 }
 
-function showProducts() {
-  console.log("Products:\n");
+function showProducts(products) {
   for (const element of products) {
     console.log(element.toString());
   }
 }
 
-/*function optionsNumFunct(totalOptions) {
-  let options = new Array();
+function containsNumbers(str) {
+  return /\d/.test(str);
+}
 
-  for(let i = 0; i < totalOptions; i++){
-    options[i] = i + 1;
+function searchProdsByPrice() {
+  let answer = prompt(`${prodsByPriceOptsMsg}`);
+  while (answer !== "1" && answer !== "2") {
+    answer = prompt(`${genericErrorMsg}${prodsByPriceOptsMsg}`);
+  }
+  let sortedProds;
+
+  if (answer === "1") {
+    sortedProds = products.toSorted((a, b) => (b.price) - (a.price));
+    console.log("Highest to lowest price products:\n");
+  } else {
+    sortedProds = products.toSorted((a, b) => (a.price) - (b.price));
+    console.log("Lowest to highest price products:\n");
   }
 
-  return options;
-}*/
+  showProducts(sortedProds);
+}
+
+function searchProdsAlphOrder() {
+  let answer = prompt(`${prodsByAplhOptsMsg}`);
+  while (answer !== "1" && answer !== "2") {
+    answer = prompt(`${genericErrorMsg}${prodsByAplhOptsMsg}`);
+  }
+  let sortedProds;
+
+  if (answer === "1") {
+    sortedProds = products.toSorted((a, b) => (a.name.charCodeAt(0)) - (b.name.charCodeAt(0)));
+    console.log("A to Z products:\n");
+  } else {
+    sortedProds = products.toSorted((a, b) => (b.name.charCodeAt(0)) - (a.name.charCodeAt(0)));
+    console.log("Z to A products:\n");
+  }
+
+  showProducts(sortedProds);
+}
+
+/*
+----------------------------------------ESTAMOS AQUÍ-----------------------------------------------------
+Completar ultimas funciones de filtrado y JSON
+*/
 
 main();
