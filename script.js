@@ -49,7 +49,7 @@ products[1] = new Product(
   idCounter++,
   "Asus ROG Strix B550-F",
   "Super gaming motherboard",
-  "Motherboard",
+  "Motherboards",
   280,
   4.6
 );
@@ -57,7 +57,7 @@ products[2] = new Product(
   idCounter++,
   "ZOTAC ZT-A30500E-10M",
   "Powerful gaming graphics card",
-  "Graphics card",
+  "Graphics cards",
   740,
   4.7
 );
@@ -110,10 +110,12 @@ let sureToDeleteMsg = `Are you sure you want to delete this product?\n\n`;
 let returnDeleteProdMsg = `Go back to main menu --> Enter '1'\nGo back to the deleting section --> Enter '2'\n`;
 let prodsByPriceOptsMsg = `   - Highest to lowest --> Enter '1'\n   - Lowest to highest --> Enter '2'\n`;
 let prodsByAplhOptsMsg = `   - From A to Z --> Enter '1'\n   - From Z to A --> Enter '2'\n`;
+let searchByOptsMsg = `   - Search products by price --> Enter "1".\n   - Search products in alphabetical order --> Enter "2".\n   - Search products by rating --> Enter "3".\n`;
 
 //Functions:
 
 function main() {
+  JSON.stringify(products);
   let exit = false;
   let isValid;
 
@@ -177,15 +179,15 @@ function main() {
         break;
 
       case "6":
-        searchProdsByPrice();
+        searchProdsByPrice(products);
         break;
 
       case "7":
-        searchProdsAlphOrder();
+        searchProdsAlphOrder(products);
         break;
 
       case "8":
-        searchProdsByRating();
+        searchProdsByRating(products);
         break;
 
       case "9":
@@ -246,6 +248,7 @@ function addProduct() {
     rating
   );
   products.push(product);
+  JSON.stringify(products);
   console.log("Added product:\n");
   console.log(product.toString());
 }
@@ -463,6 +466,7 @@ function deleteProduct() {
       if (sureToDelete === "1") {
         index = products.indexOf(product);
         products.splice(index, 1);
+        JSON.stringify(products);
         window.alert(`The product has been deleted successfully`);
         console.log("Products:\n");
         showProducts(products);
@@ -489,7 +493,7 @@ function containsNumbers(str) {
   return /\d/.test(str);
 }
 
-function searchProdsByPrice() {
+function searchProdsByPrice(products) {
   let answer = prompt(`${prodsByPriceOptsMsg}`);
   while (answer !== "1" && answer !== "2") {
     answer = prompt(`${genericErrorMsg}${prodsByPriceOptsMsg}`);
@@ -497,17 +501,17 @@ function searchProdsByPrice() {
   let sortedProds;
 
   if (answer === "1") {
-    sortedProds = products.toSorted((a, b) => (b.price) - (a.price));
+    sortedProds = products.toSorted((a, b) => b.price - a.price);
     console.log("Highest to lowest price products:\n");
   } else {
-    sortedProds = products.toSorted((a, b) => (a.price) - (b.price));
+    sortedProds = products.toSorted((a, b) => a.price - b.price);
     console.log("Lowest to highest price products:\n");
   }
 
   showProducts(sortedProds);
 }
 
-function searchProdsAlphOrder() {
+function searchProdsAlphOrder(products) {
   let answer = prompt(`${prodsByAplhOptsMsg}`);
   while (answer !== "1" && answer !== "2") {
     answer = prompt(`${genericErrorMsg}${prodsByAplhOptsMsg}`);
@@ -515,19 +519,69 @@ function searchProdsAlphOrder() {
   let sortedProds;
 
   if (answer === "1") {
-    sortedProds = products.toSorted((a, b) => (a.name.charCodeAt(0)) - (b.name.charCodeAt(0)));
+    sortedProds = products.toSorted(
+      (a, b) => a.name.localeCompare(b.name)
+    );
     console.log("A to Z products:\n");
   } else {
-    sortedProds = products.toSorted((a, b) => (b.name.charCodeAt(0)) - (a.name.charCodeAt(0)));
+    sortedProds = products.toSorted(
+      (a, b) => b.name.localeCompare(a.name)
+    );
     console.log("Z to A products:\n");
   }
 
   showProducts(sortedProds);
 }
 
-/*
-----------------------------------------ESTAMOS AQUÍ-----------------------------------------------------
-Completar ultimas funciones de filtrado y JSON
-*/
+function searchProdsByRating(products) {
+  let answer = prompt(`${prodsByPriceOptsMsg}`);
+  while (answer !== "1" && answer !== "2") {
+    answer = prompt(`${genericErrorMsg}${prodsByPriceOptsMsg}`);
+  }
+  let sortedProds;
+
+  if (answer === "1") {
+    sortedProds = products.toSorted((a, b) => b.rating - a.rating);
+    console.log("Highest to lowest rating products:\n");
+  } else {
+    sortedProds = products.toSorted((a, b) => a.rating - b.rating);
+    console.log("Lowest to highest rating products:\n");
+  }
+
+  showProducts(sortedProds);
+}
+
+function filterByCategory() {
+  let category = checkedCategory("");
+  let prodsFiltered = products
+    .filter((product) => product.category === category)
+  console.log(`Products filtered by category --> [${category}]:`);
+  showProducts(prodsFiltered);
+  searchByOpts(prodsFiltered);
+}
+
+function searchByOpts(prodsFiltered) {
+  let answer = prompt(`To filter:\n[\n${selectOptionsMsg}${searchByOptsMsg}]\nEnter 'x' to return to the main menu.`);
+  while (answer.toLowerCase() !== 'x' && answer !== "1" && answer !== "2" && answer !== "3") {
+    answer = prompt(`${genericErrorMsg}${selectOptionsMsg}${searchByOptsMsg}`);
+  }
+
+  switch (answer) {
+    case "1":
+      searchProdsByPrice(prodsFiltered);
+      break;
+
+    case "2":
+      searchProdsAlphOrder(prodsFiltered);
+      break;
+
+    case "3":
+      searchProdsByRating(prodsFiltered);
+      break;
+
+    default:
+      break;
+  }
+}
 
 main();
